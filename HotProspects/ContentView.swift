@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// TabView should be the parent view, with the tabs inside it having a NavigationView as necessary, rather than the other way around.
 @MainActor class User: ObservableObject {
     @Published var name = "Nanachi"
 }
@@ -17,6 +18,7 @@ struct EditView: View {
 
     var body: some View {
         TextField("Name", text: $user.name)
+            .background(Color.gray)
     }
 }
 
@@ -30,10 +32,28 @@ struct DisplayView: View {
 
 struct ContentView: View {
     @StateObject private var user = User()
+    @State private var selectedTab = "Env"
     var body: some View {
-        VStack {
-            EditView().environmentObject(user)
-            DisplayView().environmentObject(user)
+        TabView(selection: $selectedTab) {
+            VStack {
+                EditView()
+                DisplayView()
+            }
+            .onTapGesture {
+                selectedTab = "Flame"
+            }
+            .environmentObject(user)
+            .tabItem {
+                Label("env", systemImage: "house")
+            }
+            .tag("Env")
+
+
+            Text("Tab 2")
+                .tabItem {
+                    Label("Fire", systemImage: "flame")
+                }
+                .tag("Flame")
         }
     }
 }
