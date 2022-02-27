@@ -65,6 +65,13 @@ struct ContentView: View {
 
             VStack {
                 EditView()
+                Image("example")
+                    .interpolation(.none) // diable pixel blending
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxHeight: .infinity)
+                    .background(.black)
+                    .ignoresSafeArea()
                 DisplayView()
             }
             .onTapGesture {
