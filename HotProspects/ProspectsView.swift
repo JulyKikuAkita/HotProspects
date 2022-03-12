@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import CodeScanner
 
 struct ProspectsView: View {
     enum FilterType {
         case none, contacted, noncontacted
     }
     @EnvironmentObject var prospects: Prospects
+    @State private var isShowingScanner = false
     let filter: FilterType
 
     var body: some View {
@@ -29,13 +31,13 @@ struct ProspectsView: View {
                 .navigationTitle(title)
                 .toolbar {
                     Button {
-                        let prospect = Prospect()
-                        prospect.name = "Nanachi"
-                        prospect.emailAddress = "nanachi@madeInAbyss.com"
-                        prospects.people.append(prospect)
+                        isShowingScanner = true
                     } label: {
                         Label("Scan", systemImage: "qrcode.viewfinder")
                     }
+                }
+                .sheet(isPresented: $isShowingScanner) {
+                    CodeScannerView(codeTypes: [.qr], simulatedData: "Paul Hudson\npaul@hackingwithswift.com",  completion: handleScan)
                 }
             }
     }
@@ -59,6 +61,30 @@ struct ProspectsView: View {
             return prospects.people.filter { $0.isContacted }
         case .noncontacted:
             return prospects.people.filter { !$0.isContacted }
+        }
+    }
+
+    /**
+     For codeScanner view:
+     An array of the types of codes we want to scan. We’re only scanning QR codes in this app so [.qr] is fine, but iOS supports lots of other types too.
+     A string to use as simulated data. Xcode’s simulator doesn’t support using the camera to scan codes, so CodeScannerView automatically presents a replacement UI so we can still test that things work. This replacement UI will automatically send back whatever we pass in as simulated data.
+     A completion function to use. This could be a closure, but we just wrote the handleScan() method so we’ll use that.
+     */
+    func handleScan(result: Result<ScanResult, ScanError>) {
+        isShowingScanner = false
+
+        switch result {
+        case .success( let result):
+            let details = result.string.components(separatedBy: "\n")
+            guard details.count == 2 else { return }
+
+            let person = Prospect()
+            person.name = details[0]
+            person.emailAddress = details[1]
+            prospects.people.append(person)
+
+        case .failure(let error):
+            print("Scanning failed: \(error.localizedDescription)")
         }
     }
 }
