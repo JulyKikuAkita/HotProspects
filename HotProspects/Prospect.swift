@@ -11,7 +11,8 @@ class Prospect: Identifiable, Codable {
     var id = UUID()
     var name = "Nanachi"
     var emailAddress = ""
-    var isContacted = false
+    // note: we don't want value to be toggled directly as it won't alert UI to change. Use toggle() at Prospects class instead
+    fileprivate(set) var isContacted = false  //read no restriciton but write only from the current file
 }
 
 
@@ -20,5 +21,12 @@ class Prospect: Identifiable, Codable {
 
     init() {
         self.people = []
+    }
+
+    // alert UI to update
+    // call objectWillChange.send() before changing your property, to ensure SwiftUI gets its animations correct.
+    func toggle(_ prospect: Prospect) {
+        objectWillChange.send()
+        prospect.isContacted.toggle()
     }
 }
