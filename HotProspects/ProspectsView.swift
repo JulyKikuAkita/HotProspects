@@ -98,8 +98,7 @@ struct ProspectsView: View {
             let person = Prospect()
             person.name = details[0]
             person.emailAddress = details[1]
-            prospects.people.append(person)
-            prospects.save() //Note: call save() inside ProspectsView isn’t good design
+            prospects.add(person) // should use encapsulation, getter/setter
 
         case .failure(let error):
             print("Scanning failed: \(error.localizedDescription)")
