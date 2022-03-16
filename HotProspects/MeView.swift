@@ -28,7 +28,7 @@ struct MeView: View {
                     .textContentType(.emailAddress)
                     .font(.title)
 
-                Image(uiImage: generateQRCode(from: "\(name)\n\(emailAddress)"))
+                Image(uiImage: qrCode)
                     .interpolation(.none)
                     .resizable()
                     .scaledToFit()
@@ -43,6 +43,9 @@ struct MeView: View {
                     }
             }
             .navigationTitle("Your code")
+            .onAppear(perform: updateCode) // don't update qrcode as view update, only use the modifiers specified here
+            .onChange(of: name) { _ in updateCode() }
+            .onChange(of: emailAddress) { _ in updateCode() }
         }
     }
 
@@ -51,11 +54,14 @@ struct MeView: View {
 
         if let outputImage = filter.outputImage {
             if let cgimg = context.createCGImage(outputImage, from: outputImage.extent) {
-                qrCode = UIImage(cgImage: cgimg) // Cause "Modifying state during view update, this will cause undefined behavior."
-                return qrCode
+                return UIImage(cgImage: cgimg)
             }
         }
         return UIImage(systemName: "xmark.circle") ?? UIImage()
+    }
+
+    func updateCode() {
+        qrCode = generateQRCode(from: "\(name)\n\(emailAddress)")
     }
 }
 
