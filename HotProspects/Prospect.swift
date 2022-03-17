@@ -13,6 +13,14 @@ class Prospect: Identifiable, Codable {
     var emailAddress = ""
     // note: we don't want value to be toggled directly as it won't alert UI to change. Use toggle() at Prospects class instead
     fileprivate(set) var isContacted = false  //read no restriciton but write only from the current file
+    var createdTime = Date()
+
+    var createdTimeString: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .medium
+        return formatter.string(from: createdTime)
+    }
 }
 
 
@@ -47,5 +55,15 @@ class Prospect: Identifiable, Codable {
     func add(_ prospect: Prospect) {
         people.append(prospect)
         save()
+    }
+
+    func sortByDate() {
+        objectWillChange.send()
+        people = people.sorted { $0.createdTime < $1.createdTime }
+    }
+
+    func sortByName() {
+        objectWillChange.send()
+        people = people.sorted {$0.name < $1.name }
     }
 }

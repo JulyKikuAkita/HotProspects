@@ -13,19 +13,35 @@ struct ProspectsView: View {
     enum FilterType {
         case none, contacted, noncontacted
     }
+
+    enum SortBy {
+        case uuid, name, date
+    }
+    
     @EnvironmentObject var prospects: Prospects
     @State private var isShowingScanner = false
+    @State private var isShowingSortConfirmationDialog = false
+    @State private var sortBy: SortBy = .uuid
     let filter: FilterType
+
+
 
     var body: some View {
         NavigationView {
             List {
                 ForEach(filteredProspects) { prosepct in
-                    VStack(alignment: .leading) {
-                        Text(prosepct.name)
-                            .font(.headline)
-                        Text(prosepct.emailAddress)
-                            .foregroundColor(.secondary)
+                    HStack {
+                        prosepct.isContacted ?
+                            Image(systemName: "person.crop.circle.badge.xmark") :
+                            Image(systemName: "person.crop.circle.fill.badge.checkmark")
+                        VStack(alignment: .leading) {
+                                Text(prosepct.name)
+                                    .font(.headline)
+                                Text(prosepct.emailAddress)
+                                    .foregroundColor(.secondary)
+                                Text(prosepct.createdTimeString)
+                                    .foregroundColor(.green)
+                            }
                     }
                     .swipeActions {
                         if prosepct.isContacted {
@@ -54,11 +70,31 @@ struct ProspectsView: View {
                 }
             }
                 .navigationTitle(title)
+            
                 .toolbar {
-                    Button {
-                        isShowingScanner = true
-                    } label: {
-                        Label("Scan", systemImage: "qrcode.viewfinder")
+                    ToolbarItemGroup(placement: .navigationBarTrailing) {
+                        Button {
+                            isShowingScanner = true
+                        } label: {
+                            Label("Scan", systemImage: "qrcode.viewfinder")
+                        }
+
+                        Button {
+                            isShowingSortConfirmationDialog = true
+                        } label: {
+                            Label("Sort", systemImage: "arrow.up.arrow.down.square")
+                        }
+                    }
+                }
+                .confirmationDialog("Sort by", isPresented: $isShowingSortConfirmationDialog) {
+                    Button("Sory by date") {
+                        sortBy = .date
+                        prospects.sortByDate()
+                    }
+
+                    Button("Sort by name") {
+                        sortBy = .name
+                        prospects.sortByName()
                     }
                 }
                 .sheet(isPresented: $isShowingScanner) {
